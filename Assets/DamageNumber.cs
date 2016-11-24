@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEditor.Animations;
 
 public class DamageNumber : MonoBehaviour
 {
@@ -34,15 +35,9 @@ public class DamageNumber : MonoBehaviour
 
 	private float animationDuration;
 	
-	private Animation _animation;
+	//private Animation _animation;
 
 	/************************************************************************************************/
-	private void Awake()
-	{
-
-		_animation = GetComponent<Animation>();
-	} 
-
 	void Start()
 	{
 		leftMod = Random.Range(-randHorizontalOffset, randHorizontalOffset);    // Pick a random offset
@@ -54,18 +49,7 @@ public class DamageNumber : MonoBehaviour
 
 		UpdateFontScale();
 
-		// Get array for animation on NumberManager
-
-		foreach (AnimationClip clip in DamageNumberManager.instance.animations)
-		{
-			clip.legacy = true;
-			_animation.AddClip(clip, clip.name);
-			print(clip + ">" + clip.name);
-		}
-	}
-
-	void OnEnable()
-	{
+		UpdateAnimatorController();
 	}
 
 	/************************************************************************************************/
@@ -105,23 +89,19 @@ public class DamageNumber : MonoBehaviour
 		}
 	}
 
-	public void Initialize(Transform t, string value, string a)
+	public void Initialize(Transform t, string value, int animationIndex = 0, GUIStyle fontStyle = null)
 	{
 		transform.SetParent(t);
 
 		damage = value;
-
-		currentAnimation = a;
-
 		alpha = 1;
 		leftMod = Random.Range(-randHorizontalOffset, randHorizontalOffset);    // Pick a random offset
+		
+		UpdateFontScale(t);
 
-		print(currentAnimation);
-		print(" -- ");
-
-		_animation.Play(currentAnimation);
-		StartCoroutine(Despawn(_animation.clip.length));
-		UpdateFontScale();
+		GetComponent<Animator>().SetInteger("TextAnimation", animationIndex);
+		
+		StartCoroutine(Despawn(1.0f));
 	}
 
 	IEnumerator Despawn(float delay = 0.0f)
@@ -130,13 +110,17 @@ public class DamageNumber : MonoBehaviour
 		SimplePool.Despawn(gameObject);
 	}
 
-	private void UpdateFontScale()
+	private void UpdateFontScale(Transform t = null)
 	{
+		if (t == null)
+			t = transform;
+
 		if (distanceScaleFont)
 		{
-			float distance = Vector3.Distance(Camera.main.transform.position, transform.position);
+			float distance = Vector3.Distance(Camera.main.transform.position, t.position);
 
-
+			//print(transform.name + " at " + transform.position);
+			
 			resizeFont = Mathf.CeilToInt(fontScale * 10.0f / Mathf.CeilToInt(distance));
 
 			if (damageStyle != null)
@@ -144,11 +128,53 @@ public class DamageNumber : MonoBehaviour
 				damageStyle.fontSize = resizeFont;
 				damageStyleShadow.fontSize = resizeFont;
 			}
+			damage = Mathf.Ceil(distance).ToString();
 		}
 		else
 		{
 			damageStyle.fontSize = fontScale;
 			damageStyleShadow.fontSize = fontScale;
 		}
+	}
+
+	private void UpdateAnimatorController()
+	{
+		// The new controller that will be created based on Manager animations
+		AnimatorController newController = new AnimatorController();
+		newController.AddLayer("DefaultLayer");
+
+		// Add a parameter that will determine the animation states
+		AnimatorControllerParameter animatorParameter = new AnimatorControllerParameter();
+		animatorParameter.type = AnimatorControllerParameterType.Int;
+		animatorParameter.name = "TextAnimation";
+		animatorParameter.defaultInt = 999;
+		newController.AddParameter(animatorParameter);
+
+		// Add state machine
+		AnimatorStateMachine rootStateMachine = newController.layers[0].stateMachine;
+		AnimatorStateMachine stateMachine = rootStateMachine.AddStateMachine("TextAnimationStateMachine");
+
+		// Create a default state to prevent animation auto playing index 0
+		AnimatorState waitingState = stateMachine.AddState("Waiting");
+
+		//foreach (AnimationClip clip in DamageNumberManager.instance.animations)
+		for (int i = 0; i < DamageNumberManager.instance.animations.Length; i++)
+		{
+			AnimationClip clip = DamageNumberManager.instance.animations[i];
+
+			// Add new state based on the AnimationClip
+			AnimatorState state = stateMachine.AddState(clip.name);
+			state.motion = clip;
+
+			// Create transition from "Waiting" to the new state
+			AnimatorStateTransition transition = waitingState.AddTransition(state, false);
+			transition.AddCondition(AnimatorConditionMode.Equals, i, "TextAnimation");
+		}
+
+		// Override the existing Animator Controller
+		AnimatorOverrideController overrideController = new AnimatorOverrideController();
+		overrideController.runtimeAnimatorController = newController;
+
+		GetComponent<Animator>().runtimeAnimatorController = overrideController;
 	}
 }

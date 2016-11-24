@@ -5,7 +5,7 @@ public class DamageNumberSpawner : MonoBehaviour {
 
 	public string textValue = "water";
 
-	public string animationName = "FloatingText_DefaultAnim";
+	public int animationIndex = 0;
 
 	public Vector2 intervalRange = new Vector2(0.2f, 0.4f);
 
@@ -23,7 +23,7 @@ public class DamageNumberSpawner : MonoBehaviour {
 
 		yield return new WaitForSeconds(delay);
 	
-		DamageNumberManager.instance.SpawnDamageNumber(transform, textValue, animationName);
+		DamageNumberManager.instance.SpawnDamageNumber(transform, textValue, animationIndex);
 		
 		running = false;
 	}

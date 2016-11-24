@@ -7,6 +7,8 @@ public class DamageNumberManager : MonoBehaviour {
 
 	public AnimationClip[] animations;
 
+	public GUIStyle testStyle;
+
 	// Use this for initialization
 	void Awake ()
 	{
@@ -15,11 +17,18 @@ public class DamageNumberManager : MonoBehaviour {
 		else if (instance != null)
 			Destroy(gameObject);
 		DontDestroyOnLoad(gameObject);
+
+		GameObject test = (GameObject)Resources.Load("Prefabs/DamageNumber");
+	}
+	
+	public void SpawnDamageNumber(Transform t, string value, int animationIndex)
+	{
+		GameObject instance = SimplePool.Spawn((GameObject)Resources.Load("Prefabs/DamageNumber"), Vector3.zero, Quaternion.identity);
+		instance.GetComponent<DamageNumber>().Initialize(t, value, animationIndex);
 	}
 
 	public void SpawnDamageNumber(Transform t, string value, string animationName)
 	{
-		GameObject instance = SimplePool.Spawn((GameObject)Resources.Load("Prefabs/DamageNumber"), transform.position, Quaternion.identity);
-		instance.GetComponent<DamageNumber>().Initialize(t, value, animationName);
+		// do something here that checks animationName then converts it to animationIndex based on the PREFAB gameobject's Animator
 	}
 }
