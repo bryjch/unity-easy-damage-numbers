@@ -8,7 +8,7 @@ public class DamageNumberManager : MonoBehaviour {
 	public AnimationClip[] animations;
 
 	// Use this for initialization
-	void Start ()
+	void Awake ()
 	{
 		if (instance == null)
 			instance = this;
@@ -16,10 +16,10 @@ public class DamageNumberManager : MonoBehaviour {
 			Destroy(gameObject);
 		DontDestroyOnLoad(gameObject);
 	}
-	
-	// Update is called once per frame
-	void Update ()
+
+	public void SpawnDamageNumber(Transform t, string value, string animationName)
 	{
-	
+		GameObject instance = SimplePool.Spawn((GameObject)Resources.Load("Prefabs/DamageNumber"), transform.position, Quaternion.identity);
+		instance.GetComponent<DamageNumber>().Initialize(t, value, animationName);
 	}
 }

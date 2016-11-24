@@ -3,7 +3,7 @@ using System.Collections;
 
 public class DamageNumber : MonoBehaviour
 {
-	public int animationNumber = 0;
+	public string currentAnimation;
 
 	[Tooltip("Default font scale. Play around with this!")]
 	public int fontScale = 20;
@@ -33,8 +33,16 @@ public class DamageNumber : MonoBehaviour
 	//private AnimatorClipInfo[] clipInfo;
 
 	private float animationDuration;
+	
+	private Animation _animation;
 
 	/************************************************************************************************/
+	private void Awake()
+	{
+
+		_animation = GetComponent<Animation>();
+	} 
+
 	void Start()
 	{
 		leftMod = Random.Range(-randHorizontalOffset, randHorizontalOffset);    // Pick a random offset
@@ -45,18 +53,19 @@ public class DamageNumber : MonoBehaviour
 		damageStyleShadow.alignment = TextAnchor.UpperCenter;
 
 		UpdateFontScale();
+
+		// Get array for animation on NumberManager
+
+		foreach (AnimationClip clip in DamageNumberManager.instance.animations)
+		{
+			clip.legacy = true;
+			_animation.AddClip(clip, clip.name);
+			print(clip + ">" + clip.name);
+		}
 	}
 
 	void OnEnable()
 	{
-		alpha = 1;
-		leftMod = Random.Range(-randHorizontalOffset, randHorizontalOffset);    // Pick a random offset
-
-		//clipInfo = GetComponent<Animator>().GetCurrentAnimatorClipInfo(0);
-		GetComponent<Animation>().Play("TalkAnimation");
-		animationDuration = DamageNumberManager.instance.animations[animationNumber].length;
-		StartCoroutine(Despawn(animationDuration));
-		UpdateFontScale();
 	}
 
 	/************************************************************************************************/
@@ -96,11 +105,23 @@ public class DamageNumber : MonoBehaviour
 		}
 	}
 
-	public void Initialize(Transform t, string value, int animNum)
+	public void Initialize(Transform t, string value, string a)
 	{
 		transform.SetParent(t);
 
 		damage = value;
+
+		currentAnimation = a;
+
+		alpha = 1;
+		leftMod = Random.Range(-randHorizontalOffset, randHorizontalOffset);    // Pick a random offset
+
+		print(currentAnimation);
+		print(" -- ");
+
+		_animation.Play(currentAnimation);
+		StartCoroutine(Despawn(_animation.clip.length));
+		UpdateFontScale();
 	}
 
 	IEnumerator Despawn(float delay = 0.0f)

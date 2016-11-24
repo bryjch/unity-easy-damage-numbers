@@ -5,7 +5,7 @@ public class DamageNumberSpawner : MonoBehaviour {
 
 	public string textValue = "water";
 
-	public int animationNumber = 0;
+	public string animationName = "FloatingText_DefaultAnim";
 
 	public Vector2 intervalRange = new Vector2(0.2f, 0.4f);
 
@@ -22,10 +22,9 @@ public class DamageNumberSpawner : MonoBehaviour {
 		running = true;
 
 		yield return new WaitForSeconds(delay);
+	
+		DamageNumberManager.instance.SpawnDamageNumber(transform, textValue, animationName);
 		
-		GameObject instance = SimplePool.Spawn((GameObject)Resources.Load("Prefabs/DamageNumber"), transform.position, Quaternion.identity);
-		
-		instance.GetComponent<DamageNumber>().Initialize(transform, textValue, animationNumber);
 		running = false;
 	}
 }
