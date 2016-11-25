@@ -63,25 +63,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\DamageNumber.cs" />
-    <Compile Include="Assets\DamageNumberManager.cs" />
-    <Compile Include="Assets\DamageNumberSpawner.cs" />
-    <Compile Include="Assets\Enemy.cs" />
-    <Compile Include="Assets\First Person Drifter Controller\Scripts\FirstPersonDrifter.cs" />
-    <Compile Include="Assets\First Person Drifter Controller\Scripts\LockMouse.cs" />
-    <Compile Include="Assets\First Person Drifter Controller\Scripts\MouseLook.cs" />
-    <Compile Include="Assets\First Person Drifter Controller\Scripts\Optional\CameraFadeOnStart.cs" />
-    <Compile Include="Assets\First Person Drifter Controller\Scripts\Optional\CameraZoom.cs" />
-    <Compile Include="Assets\First Person Drifter Controller\Scripts\Optional\CheckIfBelowLevel.cs" />
-    <Compile Include="Assets\First Person Drifter Controller\Scripts\Optional\HeadBob.cs" />
-    <Compile Include="Assets\First Person Drifter Controller\Scripts\Optional\PauseMenu.cs" />
-    <Compile Include="Assets\First Person Drifter Controller\Scripts\Utils\CameraFade.cs" />
-    <Compile Include="Assets\FloatingText.cs" />
-    <Compile Include="Assets\FloatingTextController.cs" />
-    <Compile Include="Assets\SimplePool.cs" />
+    <Compile Include="Assets\Canvas System\FloatingText.cs" />
+    <Compile Include="Assets\Canvas System\FloatingTextController.cs" />
+    <Compile Include="Assets\OnGUI System\DamageNumber.cs" />
+    <Compile Include="Assets\OnGUI System\DamageNumberManager.cs" />
+    <Compile Include="Assets\OnGUI System\DamageNumberSpawner.cs" />
+    <Compile Include="Assets\Shared\Enemy.cs" />
+    <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\FirstPersonDrifter.cs" />
+    <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\LockMouse.cs" />
+    <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\MouseLook.cs" />
+    <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\Optional\CameraFadeOnStart.cs" />
+    <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\Optional\CameraZoom.cs" />
+    <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\Optional\CheckIfBelowLevel.cs" />
+    <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\Optional\HeadBob.cs" />
+    <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\Optional\PauseMenu.cs" />
+    <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\Utils\CameraFade.cs" />
+    <Compile Include="Assets\Shared\SimplePool.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\First Person Drifter Controller\info.txt" />
+    <None Include="Assets\Shared\First Person Drifter Controller\info.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />
