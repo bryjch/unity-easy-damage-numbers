@@ -16,7 +16,7 @@ public class Enemy : MonoBehaviour {
 	{
 		if (Input.GetKeyDown(KeyCode.F))
 		{
-			FloatingTextController.instance.CreateFloatingText("idiot", transform);
+			FloatingTextController.instance.CreateFloatingTextStatic("idiot", transform);
 			//FloatingTextController.instance.CreateFloatingText("idiot", transform.position + new Vector3(0, 2, 0));
 		}
 
@@ -29,7 +29,7 @@ public class Enemy : MonoBehaviour {
 		running = true;
 		yield return new WaitForSeconds(delay);
 		//FloatingTextController.instance.CreateFloatingText("idiot", transform.position + new Vector3(0, 1, 0));
-		FloatingTextController.instance.CreateFloatingText(text, transform);
+		FloatingTextController.instance.CreateFloatingText(text, transform, 1);
 		running = false;
 	}
 }

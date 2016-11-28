@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/LotsOfPeople.unity
+- path: Assets/RoofParty.unity
   isLoaded: 1
   isActive: 1

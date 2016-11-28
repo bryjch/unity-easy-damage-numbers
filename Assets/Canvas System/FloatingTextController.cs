@@ -3,6 +3,8 @@ using System.Collections;
 
 public class FloatingTextController : MonoBehaviour {
 
+	public float scaling = 1.0f;
+
 	public float offsetRangeX = 0.1f;
 	public float offsetRangeY = 0.1f;
 
@@ -12,6 +14,8 @@ public class FloatingTextController : MonoBehaviour {
 	
 	public GameObject canvas;
 
+	public AnimationClip[] animations;
+	
 	void Awake()
 	{
 		if (instance == null)
@@ -36,7 +40,7 @@ public class FloatingTextController : MonoBehaviour {
 	{
 		//print("please go to " + pos);
 
-		print("this is happening");
+		print("this is happening");	
 
 		GameObject instance = SimplePool.Spawn(floatingTextPrefab, Vector3.zero, Quaternion.identity);
 		//instance.GetComponent<FloatingText>().Initialize(pos, "hello world!")
@@ -50,10 +54,15 @@ public class FloatingTextController : MonoBehaviour {
 		//floatingText.SetText(text);
 	}
 
-	public void CreateFloatingText(string text, Transform t)
+	public void CreateFloatingText(string text, Transform t, int animIndex)
 	{
 		GameObject instance = SimplePool.Spawn(floatingTextPrefab, Vector3.zero, Quaternion.identity);
-		instance.GetComponent<FloatingText>().Initialize(t, "Hello world!");
+		instance.GetComponent<FloatingText>().Initialize(t, text, animIndex, scaling);
 	}
 
+	public void CreateFloatingTextStatic(string text, Transform t)
+	{
+		GameObject instance = SimplePool.Spawn(floatingTextPrefab, Vector3.zero, Quaternion.identity);
+		instance.GetComponent<FloatingText>().InitializeStatic(t, text);
+	}
 }
