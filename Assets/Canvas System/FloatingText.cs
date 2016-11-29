@@ -3,83 +3,99 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEditor.Animations;
 
+[RequireComponent(typeof(Canvas))]
+[RequireComponent(typeof(CanvasScaler))]
 public class FloatingText : MonoBehaviour {
 
 	public enum ScalingMode { constantScale, scaleWithDistance };
 	
-	public float objectScale = 1.0f;
-
-	private ScalingMode scalingMode = ScalingMode.constantScale;
-
-	private Text floatingText;
-
-	private AnimatorClipInfo[] clipInfo;
-
-	private Vector3 initialScale;
-
+	public float textScale = 1.0f;
 	
-	private bool fixedScale = true;
+	private Vector3 _initialScale;
+	private ScalingMode	_scalingMode;
 
-	private Animator animator;
-	private Camera cam;
-	private FloatingTextController textController;
+	private Camera		_cam;
+	private Animator	_animator;
+	private Text		_floatingText;
+	private FloatingTextController _textController;
 
+	private void OnValidate()
+	{
+		// The gameobject this script is attached to MUST have a child gameobject.
+		// The child is where the [Text], [Outline] & [Animator] components reside.
+		// This is because having the [Animator] component on the parent object causes problems
+		// with world transforms during animation.
+		// A child will be created if it's not found - then you can customize the details!
+		// BUT it's still safer to duplicate the default FloatingText prefab then modify the copy.
+		if (transform.childCount < 1 || transform.GetComponentInChildren<Text>() == null)
+		{
+			Debug.LogError("Missing child on FloatingText object! Creating default child.");
+			GameObject child = CreateDefaultChild();
+		}
+	}
 
 	/************************************************************************************************/
 	private void Awake()
 	{
-		animator = GetComponentInChildren<Animator>();
-		floatingText = animator.GetComponent<Text>();
+		// Ensure essential default values are set (These prevent disgusting pixely text)
+		transform.localScale = _initialScale = new Vector3(0.01f, 0.01f, 0.01f);
+		GetComponent<CanvasScaler>().dynamicPixelsPerUnit = 10;
+		
+		_cam = Camera.main;
 
-		clipInfo = animator.GetCurrentAnimatorClipInfo(0);
-		GetComponent<Canvas>().worldCamera = Camera.main;
+		if (GetComponent<Canvas>().worldCamera == null)
+			GetComponent<Canvas>().worldCamera = _cam;
 
-		initialScale = transform.localScale;
-		cam = Camera.main;
+		_animator = GetComponentInChildren<Animator>();
+		_floatingText = _animator.GetComponent<Text>();
+		
+		_textController = FloatingTextController.instance;
 
-		if (textController == null)
-			textController = FloatingTextController.instance;
-
-		UpdateAnimatorController();
+		// Dynamically create an animator controller based on the AnimationClip(s) provided in FloatingTextManager
+		_animator.runtimeAnimatorController = _textController.GetAnimatorController();
 	}
 
 	void OnEnable()
 	{
+		textScale = _textController.defaultTextScale;
+		_scalingMode = _textController.defaultScalingMode;
+
 		// Billboard facing functionality
-		transform.LookAt(transform.position + cam.transform.rotation * Vector3.forward, cam.transform.rotation * Vector3.up);
+		transform.LookAt(transform.position + _cam.transform.rotation * Vector3.forward, _cam.transform.rotation * Vector3.up);
 	}
 
 
 	private void FixedUpdate()
 	{
 		// Billboard facing functionality
-		transform.LookAt(transform.position + cam.transform.rotation * Vector3.forward, cam.transform.rotation * Vector3.up);
+		transform.LookAt(transform.position + _cam.transform.rotation * Vector3.forward, _cam.transform.rotation * Vector3.up);
 		
-		if (scalingMode == ScalingMode.constantScale) {
+		if (_scalingMode == ScalingMode.constantScale) {
 			// Adjust text scale so it's the same size despite distance from camera
-			Plane plane = new Plane(cam.transform.forward, cam.transform.position);
+			Plane plane = new Plane(_cam.transform.forward, _cam.transform.position);
 			float dist = plane.GetDistanceToPoint(transform.position);	// Maybe this can use Vector3.SqrMagnitude instead (less computation?)
-			transform.localScale = initialScale * dist * (objectScale / 5);
+			transform.localScale = _initialScale * dist * (textScale / 5);
+		}
+		else
+		{
+			transform.localScale = _initialScale * (textScale);
 		}
 	}
 
 	/************************************************************************************************/
 
-	public void Initialize(Transform t, string value, int animIndex, float fontScale = 1.0f)
+	public void Initialize(Transform t, string textValue, int animIndex)
 	{
-		transform.SetParent(t);
 		transform.position = t.position;
 
-		floatingText.text = value;
+		_floatingText.text = textValue;
 
-		if (clipInfo.Length >= 1)
-			StartCoroutine(DespawnAfter(textController.animations[animIndex].length));
+		if (_animator.GetCurrentAnimatorClipInfo(0).Length >= 1)
+			StartCoroutine(DespawnAfter(_textController.animations[animIndex].length));
 		else
 			StartCoroutine(DespawnAfter(1.0f)); // Fallback despawn timer if no animations in Manager
 
-		objectScale = fontScale;
-
-		GetComponentInChildren<Animator>().SetInteger("TextAnimation", animIndex);
+		_animator.SetInteger("TextAnimation", animIndex);
 	}
 
 	public void InitializeStatic(Transform t, string value)
@@ -87,57 +103,36 @@ public class FloatingText : MonoBehaviour {
 		transform.SetParent(t);
 		transform.position = t.position;
 
-		floatingText.text = value;
+		_floatingText.text = value;
 	}
 
-	public void SetScalingMode(ScalingMode newMode)
+	public void SetScalingMode(ScalingMode newMode, float newScale)
 	{
-		scalingMode = newMode;
+		_scalingMode = newMode;
+		textScale = newScale;
+	}
+
+	public void SetParent(Transform t)
+	{
+		transform.SetParent(t);
 	}
 
 	/************************************************************************************************/
-
-
-	private void UpdateAnimatorController()
+	
+	// Create a really basic child that has all necessary components
+	private GameObject CreateDefaultChild()
 	{
-		// The new controller that will be created based on Manager animations
-		AnimatorController newController = new AnimatorController();
-		newController.AddLayer("DefaultLayer");
+		GameObject child = new GameObject();
+		child.name = "Text";
+		child.transform.SetParent(transform);
+		child.AddComponent<RectTransform>();
+		child.AddComponent<Text>().alignment = TextAnchor.MiddleCenter;
+		child.AddComponent<Outline>();
+		child.AddComponent<Animator>();
 
-		// Add a parameter that will determine the animation states
-		AnimatorControllerParameter animatorParameter = new AnimatorControllerParameter();
-		animatorParameter.type = AnimatorControllerParameterType.Int;
-		animatorParameter.name = "TextAnimation";
-		animatorParameter.defaultInt = 999;
-		newController.AddParameter(animatorParameter);
-
-		// Add state machine
-		AnimatorStateMachine rootStateMachine = newController.layers[0].stateMachine;
-		AnimatorStateMachine stateMachine = rootStateMachine.AddStateMachine("TextAnimationStateMachine");
-
-		// Create a default state to prevent animation auto playing index 0
-		AnimatorState waitingState = stateMachine.AddState("Waiting");
-
-		//foreach (AnimationClip clip in DamageNumberManager.instance.animations)
-		for (int i = 0; i < FloatingTextController.instance.animations.Length; i++)
-		{
-			AnimationClip clip = FloatingTextController.instance.animations[i];
-
-			// Add new state based on the AnimationClip
-			AnimatorState state = stateMachine.AddState(clip.name);
-			state.motion = clip;
-
-			// Create transition from "Waiting" to the new state
-			AnimatorStateTransition transition = waitingState.AddTransition(state, false);
-			transition.AddCondition(AnimatorConditionMode.Equals, i, "TextAnimation");
-		}
-
-		// Override the existing Animator Controller
-		AnimatorOverrideController overrideController = new AnimatorOverrideController();
-		overrideController.runtimeAnimatorController = newController;
-
-		GetComponentInChildren<Animator>().runtimeAnimatorController = overrideController;
+		return child;
 	}
+
 	IEnumerator DespawnAfter(float delay)
 	{
 		yield return new WaitForSeconds(delay);

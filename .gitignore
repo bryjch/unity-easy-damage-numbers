@@ -29,3 +29,5 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+Assets/RoofParty/LightingData.asset
+Assets/RoofParty/LightingData.asset.meta

@@ -5,6 +5,8 @@ public class Enemy : MonoBehaviour {
 
 	public int health = 100;
 
+	public int animIndex = 0;
+
 	private bool running = false;
 
 	public void TakeDamage(string amount)
@@ -14,12 +16,6 @@ public class Enemy : MonoBehaviour {
 
 	private void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.F))
-		{
-			FloatingTextController.instance.CreateFloatingTextStatic("idiot", transform);
-			//FloatingTextController.instance.CreateFloatingText("idiot", transform.position + new Vector3(0, 2, 0));
-		}
-
 		if (!running)
 			this.TakeDamage(Random.Range(0, 100).ToString());
 	}
@@ -28,8 +24,11 @@ public class Enemy : MonoBehaviour {
 	{
 		running = true;
 		yield return new WaitForSeconds(delay);
-		//FloatingTextController.instance.CreateFloatingText("idiot", transform.position + new Vector3(0, 1, 0));
-		FloatingTextController.instance.CreateFloatingText(text, transform, 1);
+
+		FloatingText instance = FloatingTextController.instance.CreateFloatingText(text, transform, animIndex);
+		//instance.SetScalingMode(FloatingText.ScalingMode.constantScale, 1.0f);
+		//instance.SetParent(transform);
+
 		running = false;
 	}
 }
