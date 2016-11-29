@@ -7,14 +7,16 @@ public class FloatingTextController : MonoBehaviour {
 	public static FloatingTextController instance = null;
 
 	// User should set these in the inspector
-	public GameObject canvas;
 	public GameObject floatingTextPrefab;
 
+	[Header("Text Settings")]
 	public float defaultTextScale = 1.0f;
 	public FloatingText.ScalingMode defaultScalingMode = FloatingText.ScalingMode.constantScale;    // This won't update if you change it in the inspector after runtime
 
+	[Header("Instantiable Prefabs & Animations")]
+	[Tooltip("These prefabs can be instantiated based on their index by calling: CreateFloatingText(...)")]
 	public GameObject[] floatingTextPrefabs;
-
+	[Tooltip("Animations are also selected when calling: CreateFloatingText(...)")]
 	public AnimationClip[] animations;
 
 	private AnimatorOverrideController animatorOverrideController;
@@ -33,25 +35,17 @@ public class FloatingTextController : MonoBehaviour {
 			floatingTextPrefab = Resources.Load("Prefabs/FloatingText") as GameObject;
 		}
 
-		if (canvas == null)
-		{
-			print("[Canvas] not assigned. Searching for GameObject: \"Canvas\".");
-			canvas = GameObject.Find("Canvas");
-		}
-
 		animatorOverrideController = CreateAnimatorController();
 	}
 
 	/************************************************************************************************/
-	public FloatingText CreateFloatingText(string textValue, Transform t, int animIndex)
+	public FloatingText CreateFloatingText(string textValue, Transform t, int prefabIndex, int animIndex)
 	{
 		FloatingText instance = SimplePool.Spawn(floatingTextPrefab, Vector3.zero, Quaternion.identity).GetComponent<FloatingText>();
 		instance.transform.SetParent(transform);	//By default, it will be a parent of the controller gameobject
-
+		
 		if (animIndex < animations.Length)
-		{
 			instance.Initialize(t, textValue, animIndex);
-		}
 		else
 		{
 			instance.Initialize(t, textValue, 0);

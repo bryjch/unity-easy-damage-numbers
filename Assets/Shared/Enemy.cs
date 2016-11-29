@@ -5,6 +5,7 @@ public class Enemy : MonoBehaviour {
 
 	public int health = 100;
 
+	public int prefabIndex = 0;
 	public int animIndex = 0;
 
 	private bool running = false;
@@ -25,7 +26,7 @@ public class Enemy : MonoBehaviour {
 		running = true;
 		yield return new WaitForSeconds(delay);
 
-		FloatingText instance = FloatingTextController.instance.CreateFloatingText(text, transform, animIndex);
+		FloatingText instance = FloatingTextController.instance.CreateFloatingText(text, transform, prefabIndex, animIndex);
 		//instance.SetScalingMode(FloatingText.ScalingMode.constantScale, 1.0f);
 		//instance.SetParent(transform);
 
