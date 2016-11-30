@@ -47,8 +47,10 @@ public class FloatingText : MonoBehaviour {
 			GetComponent<Canvas>().worldCamera = _cam;
 
 		_animator = GetComponentInChildren<Animator>();
-		_floatingText = _animator.GetComponent<Text>();
-		
+		_floatingText = GetComponentInChildren<Text>();
+		//_floatingText = _animator.GetComponent<Text>();
+
+
 		_textController = FloatingTextController.instance;
 
 		// Dynamically create an animator controller based on the AnimationClip(s) provided in FloatingTextManager

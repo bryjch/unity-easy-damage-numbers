@@ -29,13 +29,15 @@ public class DamageNumberSpawner : MonoBehaviour {
 		running = true;
 
 		yield return new WaitForSeconds(delay);
-	
-		DamageNumberManager.instance.SpawnDamageNumber(transform, textValue, animationIndex);
+
+		if (textValue == "")
+			DamageNumberManager.instance.SpawnDamageNumber(transform, Random.Range(0, 100).ToString(), animationIndex);
+		else
+			DamageNumberManager.instance.SpawnDamageNumber(transform, textValue, animationIndex);
 
 		//personAnimator.Play("Person_Speak", 0);
 		personAnimator.ResetTrigger("Speak");
 		personAnimator.SetTrigger("Speak");
-		personAnimator.SetInteger("Test", 69);
 
 		running = false;
 	}

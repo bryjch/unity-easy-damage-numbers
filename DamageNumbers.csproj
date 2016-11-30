@@ -63,12 +63,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Canvas System\Enemy.cs" />
     <Compile Include="Assets\Canvas System\FloatingText.cs" />
     <Compile Include="Assets\Canvas System\FloatingTextController.cs" />
+    <Compile Include="Assets\Canvas System\FloatingTextSpawner.cs" />
     <Compile Include="Assets\OnGUI System\DamageNumber.cs" />
     <Compile Include="Assets\OnGUI System\DamageNumberManager.cs" />
     <Compile Include="Assets\OnGUI System\DamageNumberSpawner.cs" />
-    <Compile Include="Assets\Shared\Enemy.cs" />
     <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\FirstPersonDrifter.cs" />
     <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\LockMouse.cs" />
     <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\MouseLook.cs" />

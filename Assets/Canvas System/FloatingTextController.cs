@@ -5,10 +5,7 @@ using UnityEditor.Animations;
 public class FloatingTextController : MonoBehaviour {
 
 	public static FloatingTextController instance = null;
-
-	// User should set these in the inspector
-	public GameObject floatingTextPrefab;
-
+	
 	[Header("Text Settings")]
 	public float defaultTextScale = 1.0f;
 	public FloatingText.ScalingMode defaultScalingMode = FloatingText.ScalingMode.constantScale;    // This won't update if you change it in the inspector after runtime
@@ -30,18 +27,13 @@ public class FloatingTextController : MonoBehaviour {
 			Destroy(gameObject);
 		DontDestroyOnLoad(gameObject);
 
-		if (floatingTextPrefab == null) {
-			print("[Floating Text] not assigned. Searching for Prefab: \"Resources/Prefabs/FloatingText\".");
-			floatingTextPrefab = Resources.Load("Prefabs/FloatingText") as GameObject;
-		}
-
 		animatorOverrideController = CreateAnimatorController();
 	}
 
 	/************************************************************************************************/
 	public FloatingText CreateFloatingText(string textValue, Transform t, int prefabIndex, int animIndex)
 	{
-		FloatingText instance = SimplePool.Spawn(floatingTextPrefab, Vector3.zero, Quaternion.identity).GetComponent<FloatingText>();
+		FloatingText instance = SimplePool.Spawn(floatingTextPrefabs[prefabIndex], Vector3.zero, Quaternion.identity).GetComponent<FloatingText>();
 		instance.transform.SetParent(transform);	//By default, it will be a parent of the controller gameobject
 		
 		if (animIndex < animations.Length)
@@ -58,7 +50,7 @@ public class FloatingTextController : MonoBehaviour {
 	// Method if you want to create a text object that shouldn't animate and despawn
 	public FloatingText CreateFloatingTextStatic(string text, Transform t)
 	{
-		GameObject instance = SimplePool.Spawn(floatingTextPrefab, Vector3.zero, Quaternion.identity);
+		GameObject instance = SimplePool.Spawn(floatingTextPrefabs[0], Vector3.zero, Quaternion.identity);
 		instance.GetComponent<FloatingText>().InitializeStatic(t, text);
 
 		return instance.GetComponent<FloatingText>();
