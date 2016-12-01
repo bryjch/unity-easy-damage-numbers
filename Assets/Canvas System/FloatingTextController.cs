@@ -9,6 +9,11 @@ public class FloatingTextController : MonoBehaviour {
 	[Header("Text Settings")]
 	public float defaultTextScale = 1.0f;
 	public FloatingText.ScalingMode defaultScalingMode = FloatingText.ScalingMode.constantScale;    // This won't update if you change it in the inspector after runtime
+	public bool defaultAlwaysOnTop = false;
+
+	[Header("do this")]
+	public Material defaultFontMaterial;
+	public Material overlayFontMaterial;
 
 	[Header("Instantiable Prefabs & Animations")]
 	[Tooltip("These prefabs can be instantiated based on their index by calling: CreateFloatingText(...)")]
@@ -17,6 +22,7 @@ public class FloatingTextController : MonoBehaviour {
 	public AnimationClip[] animations;
 
 	private AnimatorOverrideController animatorOverrideController;
+
 	
 	/************************************************************************************************/
 	void Awake()
@@ -28,6 +34,20 @@ public class FloatingTextController : MonoBehaviour {
 		DontDestroyOnLoad(gameObject);
 
 		animatorOverrideController = CreateAnimatorController();
+
+		if (defaultFontMaterial == null)
+			defaultFontMaterial = (Material)Resources.Load("DefaultFontMaterial");
+
+		if (overlayFontMaterial == null)
+			overlayFontMaterial = (Material)Resources.Load("OverlayFontMaterial");
+	}
+
+	private void FixedUpdate()
+	{
+
+		// Billboard facing functionality
+		transform.LookAt(transform.position + Camera.main.transform.rotation * Vector3.forward, Camera.main.transform.rotation * Vector3.up);
+
 	}
 
 	/************************************************************************************************/

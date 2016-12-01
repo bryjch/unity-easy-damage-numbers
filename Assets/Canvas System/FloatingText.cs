@@ -13,10 +13,13 @@ public class FloatingText : MonoBehaviour {
 	
 	private Vector3 _initialScale;
 	private ScalingMode	_scalingMode;
+	private bool _alwaysOnTop;
 
 	private Camera		_cam;
+	private Canvas		_canvas;
 	private Animator	_animator;
 	private Text		_floatingText;
+	private Image		_floatingImage;
 	private FloatingTextController _textController;
 
 	private void OnValidate()
@@ -40,17 +43,17 @@ public class FloatingText : MonoBehaviour {
 		// Ensure essential default values are set (These prevent disgusting pixely text)
 		transform.localScale = _initialScale = new Vector3(0.01f, 0.01f, 0.01f);
 		GetComponent<CanvasScaler>().dynamicPixelsPerUnit = 10;
-		
-		_cam = Camera.main;
 
-		if (GetComponent<Canvas>().worldCamera == null)
-			GetComponent<Canvas>().worldCamera = _cam;
-
+		_canvas = GetComponent<Canvas>();
 		_animator = GetComponentInChildren<Animator>();
 		_floatingText = GetComponentInChildren<Text>();
-		//_floatingText = _animator.GetComponent<Text>();
+		_floatingImage = GetComponentInChildren<Image>(true);
 
+		_cam = Camera.main;
 
+		if (_canvas.worldCamera == null)
+			_canvas.worldCamera = _cam;
+		
 		_textController = FloatingTextController.instance;
 
 		// Dynamically create an animator controller based on the AnimationClip(s) provided in FloatingTextManager
@@ -59,29 +62,22 @@ public class FloatingText : MonoBehaviour {
 
 	void OnEnable()
 	{
+		_canvas.enabled = false;
+
 		textScale = _textController.defaultTextScale;
 		_scalingMode = _textController.defaultScalingMode;
+		_alwaysOnTop = _textController.defaultAlwaysOnTop;
 
-		// Billboard facing functionality
-		transform.LookAt(transform.position + _cam.transform.rotation * Vector3.forward, _cam.transform.rotation * Vector3.up);
+		UpdateRotationAndScale();
 	}
 
 
 	private void FixedUpdate()
 	{
-		// Billboard facing functionality
-		transform.LookAt(transform.position + _cam.transform.rotation * Vector3.forward, _cam.transform.rotation * Vector3.up);
-		
-		if (_scalingMode == ScalingMode.constantScale) {
-			// Adjust text scale so it's the same size despite distance from camera
-			Plane plane = new Plane(_cam.transform.forward, _cam.transform.position);
-			float dist = plane.GetDistanceToPoint(transform.position);	// Maybe this can use Vector3.SqrMagnitude instead (less computation?)
-			transform.localScale = _initialScale * dist * (textScale / 5);
-		}
-		else
-		{
-			transform.localScale = _initialScale * (textScale);
-		}
+		UpdateRotationAndScale();
+
+		if (!_canvas.enabled)
+			_canvas.enabled = true;
 	}
 
 	/************************************************************************************************/
@@ -91,6 +87,8 @@ public class FloatingText : MonoBehaviour {
 		transform.position = t.position;
 
 		_floatingText.text = textValue;
+
+		SetAlwaysOnTop(_alwaysOnTop);
 
 		if (_animator.GetCurrentAnimatorClipInfo(0).Length >= 1)
 			StartCoroutine(DespawnAfter(_textController.animations[animIndex].length));
@@ -119,8 +117,39 @@ public class FloatingText : MonoBehaviour {
 		transform.SetParent(t);
 	}
 
+	public void SetAlwaysOnTop(bool state)
+	{
+		Material newMaterial;
+
+		if (state)
+			newMaterial = FloatingTextController.instance.overlayFontMaterial;
+		else
+			newMaterial = FloatingTextController.instance.defaultFontMaterial;
+		
+		_floatingText.material = newMaterial;
+		_floatingImage.material = newMaterial;
+	}
+
 	/************************************************************************************************/
-	
+	private void UpdateRotationAndScale()
+	{
+		// Billboard facing functionality
+		//transform.LookAt(transform.position + _cam.transform.rotation * Vector3.forward, _cam.transform.rotation * Vector3.up);
+
+		if (_scalingMode == ScalingMode.constantScale)
+		{
+			// Adjust text scale so it's the same size despite distance from camera
+			Plane plane = new Plane(_cam.transform.forward, _cam.transform.position);
+			float dist = plane.GetDistanceToPoint(transform.position);  // Maybe this can use Vector3.SqrMagnitude instead (less computation?)
+			transform.localScale = _initialScale * dist * (textScale / 5);
+		}
+		else
+		{
+			transform.localScale = _initialScale * (textScale);
+		}
+	}
+
+
 	// Create a really basic child that has all necessary components
 	private GameObject CreateDefaultChild()
 	{
