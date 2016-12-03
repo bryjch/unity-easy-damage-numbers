@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 52a18033e98d71f428cccca174cee506
-timeCreated: 1480359058
+guid: 1475c858de4b70d4598ece1d48f1b2ec
+timeCreated: 1480583828
 licenseType: Free
 TrueTypeFontImporter:
   serializedVersion: 4
@@ -10,7 +10,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Silkscreen Expanded
+  - Silkscreen
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

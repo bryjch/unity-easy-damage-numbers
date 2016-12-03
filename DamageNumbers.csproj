@@ -63,13 +63,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Canvas System\Enemy.cs" />
+    <Compile Include="Assets\Canvas System\AnimatorEditor.cs" />
     <Compile Include="Assets\Canvas System\FloatingText.cs" />
     <Compile Include="Assets\Canvas System\FloatingTextController.cs" />
     <Compile Include="Assets\Canvas System\FloatingTextSpawner.cs" />
-    <Compile Include="Assets\OnGUI System\DamageNumber.cs" />
-    <Compile Include="Assets\OnGUI System\DamageNumberManager.cs" />
-    <Compile Include="Assets\OnGUI System\DamageNumberSpawner.cs" />
+    <Compile Include="Assets\Canvas System\FloatingTextStatic.cs" />
+    <Compile Include="Assets\Canvas System\SimplePool.cs" />
+    <Compile Include="Assets\Canvas System\Sweeping.cs" />
     <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\FirstPersonDrifter.cs" />
     <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\LockMouse.cs" />
     <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\MouseLook.cs" />
@@ -79,8 +79,6 @@
     <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\Optional\HeadBob.cs" />
     <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\Optional\PauseMenu.cs" />
     <Compile Include="Assets\Shared\First Person Drifter Controller\Scripts\Utils\CameraFade.cs" />
-    <Compile Include="Assets\Shared\SimplePool.cs" />
-    <Compile Include="Assets\Sweeping.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shared\First Person Drifter Controller\info.txt" />

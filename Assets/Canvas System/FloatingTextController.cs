@@ -21,9 +21,12 @@ public class FloatingTextController : MonoBehaviour {
 	[Tooltip("Animations are also selected when calling: CreateFloatingText(...)")]
 	public AnimationClip[] animations;
 
-	private AnimatorOverrideController animatorOverrideController;
-
+	[Header("probably don't touch this")]
+	public AnimatorOverrideController animatorOverrideController;
 	
+	[HideInInspector]
+	public Quaternion lookRotation;
+
 	/************************************************************************************************/
 	void Awake()
 	{
@@ -32,94 +35,54 @@ public class FloatingTextController : MonoBehaviour {
 		else if (instance != this)
 			Destroy(gameObject);
 		DontDestroyOnLoad(gameObject);
-
-		animatorOverrideController = CreateAnimatorController();
-
+		
 		if (defaultFontMaterial == null)
-			defaultFontMaterial = (Material)Resources.Load("DefaultFontMaterial");
+			defaultFontMaterial = (Material)Resources.Load("Materials/DefaultFontMaterial");
 
 		if (overlayFontMaterial == null)
-			overlayFontMaterial = (Material)Resources.Load("OverlayFontMaterial");
+			overlayFontMaterial = (Material)Resources.Load("Materials/OverlayFontMaterial");
 	}
 
 	private void FixedUpdate()
 	{
-
-		// Billboard facing functionality
-		transform.LookAt(transform.position + Camera.main.transform.rotation * Vector3.forward, Camera.main.transform.rotation * Vector3.up);
-
+		lookRotation = Quaternion.LookRotation(Camera.main.transform.forward);
 	}
 
 	/************************************************************************************************/
 	public FloatingText CreateFloatingText(string textValue, Transform t, int prefabIndex, int animIndex)
 	{
+		// Check parameter validity
+		if (prefabIndex >= floatingTextPrefabs.Length) prefabIndex = 0;
+		if (animIndex >= animations.Length) animIndex = 0;
+
+		// Spawn new instance from pool. By default, it will be a parent of the controller gameobject.
 		FloatingText instance = SimplePool.Spawn(floatingTextPrefabs[prefabIndex], Vector3.zero, Quaternion.identity).GetComponent<FloatingText>();
-		instance.transform.SetParent(transform);	//By default, it will be a parent of the controller gameobject
+		instance.transform.SetParent(transform);
 		
-		if (animIndex < animations.Length)
-			instance.Initialize(t, textValue, animIndex);
-		else
-		{
-			instance.Initialize(t, textValue, 0);
-			Debug.LogError("[!] Animation index invalid. Will try to play animation on index [0] instead.");
-		}
+		instance.Initialize(t, textValue, animIndex);
 
 		return instance;
 	}
 
 	// Method if you want to create a text object that shouldn't animate and despawn
-	public FloatingText CreateFloatingTextStatic(string text, Transform t)
+	public FloatingText CreateFloatingTextStatic(string textValue, Transform t, int prefabIndex)
 	{
-		GameObject instance = SimplePool.Spawn(floatingTextPrefabs[0], Vector3.zero, Quaternion.identity);
-		instance.GetComponent<FloatingText>().InitializeStatic(t, text);
+		// Check parameter validity
+		if (prefabIndex < floatingTextPrefabs.Length) prefabIndex = 0;
 
-		return instance.GetComponent<FloatingText>();
+		// Spawn new instance from pool. By default, it will be a parent of the controller gameobject.
+		FloatingText instance = SimplePool.Spawn(floatingTextPrefabs[prefabIndex], Vector3.zero, Quaternion.identity).GetComponent<FloatingText>();
+		instance.transform.SetParent(transform); 
+
+		instance.InitializeStatic(t, textValue);
+		
+		return instance;
 	}
 
 	/************************************************************************************************/
-	public AnimatorOverrideController CreateAnimatorController()
+
+	public void SetAnimatorController(AnimatorOverrideController newOverrideController)
 	{
-		// The new controller that will be created based on Manager animations
-		AnimatorController newController = new AnimatorController();
-		newController.AddLayer("DefaultLayer");
-
-		// Add a parameter that will determine the animation states
-		AnimatorControllerParameter animatorParameter = new AnimatorControllerParameter();
-		animatorParameter.type = AnimatorControllerParameterType.Int;
-		animatorParameter.name = "TextAnimation";
-		animatorParameter.defaultInt = 999;
-		newController.AddParameter(animatorParameter);
-
-		// Add state machine
-		AnimatorStateMachine rootStateMachine = newController.layers[0].stateMachine;
-		AnimatorStateMachine stateMachine = rootStateMachine.AddStateMachine("TextAnimationStateMachine");
-
-		// Create a default state to prevent animation auto playing index 0
-		AnimatorState waitingState = stateMachine.AddState("Waiting");
-
-		//foreach (AnimationClip clip in DamageNumberManager.instance.animations)
-		for (int i = 0; i < animations.Length; i++)
-		{
-			AnimationClip clip = FloatingTextController.instance.animations[i];
-
-			// Add new state based on the AnimationClip
-			AnimatorState state = stateMachine.AddState(clip.name);
-			state.motion = clip;
-
-			// Create transition from "Waiting" to the new state
-			AnimatorStateTransition transition = waitingState.AddTransition(state, false);
-			transition.AddCondition(AnimatorConditionMode.Equals, i, "TextAnimation");
-		}
-
-		// Override the existing Animator Controller
-		AnimatorOverrideController overrideController = new AnimatorOverrideController();
-		overrideController.runtimeAnimatorController = newController;
-
-		return overrideController;
-	}
-
-	public AnimatorOverrideController GetAnimatorController()
-	{
-		return animatorOverrideController;
+		animatorOverrideController = newOverrideController;
 	}
 }
