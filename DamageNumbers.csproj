@@ -63,7 +63,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Canvas System\AnimatorEditor.cs" />
     <Compile Include="Assets\Canvas System\FloatingText.cs" />
     <Compile Include="Assets\Canvas System\FloatingTextController.cs" />
     <Compile Include="Assets\Canvas System\FloatingTextSpawner.cs" />

@@ -61,6 +61,7 @@ public class FloatingText : MonoBehaviour {
 		_textController = FloatingTextController.instance;
 
 		// Dynamically create an animator controller based on the AnimationClip(s) provided in FloatingTextManager
+		//_animator.runtimeAnimatorController = _textController.animatorOverrideController;
 		_animator.runtimeAnimatorController = _textController.animatorOverrideController;
 	}
 

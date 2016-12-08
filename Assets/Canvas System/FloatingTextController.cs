@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityEditor.Animations;
 
 public class FloatingTextController : MonoBehaviour {
 
@@ -21,7 +20,7 @@ public class FloatingTextController : MonoBehaviour {
 	[Tooltip("Animations are also selected when calling: CreateFloatingText(...)")]
 	public AnimationClip[] animations;
 
-	[Header("probably don't touch this")]
+	[Header("Update this after adding/removing animations")]
 	public AnimatorOverrideController animatorOverrideController;
 	
 	[HideInInspector]
@@ -77,12 +76,5 @@ public class FloatingTextController : MonoBehaviour {
 		instance.InitializeStatic(t, textValue);
 		
 		return instance;
-	}
-
-	/************************************************************************************************/
-
-	public void SetAnimatorController(AnimatorOverrideController newOverrideController)
-	{
-		animatorOverrideController = newOverrideController;
 	}
 }
