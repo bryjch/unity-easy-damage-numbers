@@ -21,6 +21,7 @@ public class FloatingTextController : MonoBehaviour {
 	public AnimationClip[] animations;
 
 	[Header("Update this after adding/removing animations")]
+	[Tooltip("This is a generated Animator(Override)Controller based on animations[]. Contains basic transition information/variables that makes this script work.")]
 	public AnimatorOverrideController animatorOverrideController;
 	
 	[HideInInspector]

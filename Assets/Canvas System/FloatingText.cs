@@ -37,7 +37,7 @@ public class FloatingText : MonoBehaviour {
 		if (transform.childCount < 1 || !transform.GetComponentInChildren<Animator>())
 		{
 			Debug.LogError("Missing child on FloatingText object! Creating default child.");
-			GameObject child = CreateComponentsChild();
+			CreateComponentsChild();
 		}
 	}
 
@@ -61,7 +61,6 @@ public class FloatingText : MonoBehaviour {
 		_textController = FloatingTextController.instance;
 
 		// Dynamically create an animator controller based on the AnimationClip(s) provided in FloatingTextManager
-		//_animator.runtimeAnimatorController = _textController.animatorOverrideController;
 		_animator.runtimeAnimatorController = _textController.animatorOverrideController;
 	}
 

@@ -4,18 +4,28 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 
+// This script generates a new AnimatorController (AC) and AnimatorOverrideController (AOC)
+// based on what animations are in FloatingTextController's animations[]. The intention is 
+// to remove the need to manually set up controllers after adding new animations.
+
+// AOC is used in FloatingTextController instead because AC requires UnityEditor.Animations. 
+// This causes a lot of problems with non-Editor scripts (i.e. FloatingTextController) during Build. 
+// AOC can be referenced without UnityEditor, so FloatingTextController uses that instead.
+
+// The reason there needs to be both a AnimatorController AND AnimatorOverrideController
+// is because AOC requires an AC reference as an asset. Trust me, I would've much preferred
+// that this script only generated an AOC, but that had issues.
+
 [CustomEditor(typeof(FloatingTextController))]
 public class AnimatorEditor : Editor
 {
-	// If there was no existing AnimatorController found on FloatingTextController,
-	// the newly generated AnimatorController will be saved at this location.
-	public string defaultControllerPath = "Assets/";
+	// If there was no existing AnimatorOverrideController found on FloatingTextController,
+	// the newly generated AC & AOC will be saved at this location with these names.
+	private string DEFAULT_CONTROLLER_PATH = "Assets/";
+	private string DEFAULT_CONTROLLER_NAME = "FTAnimatorController";
+	private string DEFAULT_OVERRIDE_CONTROLLER_NAME = "FTAnimatorOverrideController";
 
-	public string defaultControllerName = "FTAnimatorController";
-	public string defaultOverrideControllerName = "FTAnimatorOverrideController";
-
-	public AnimatorController latestAnimatorController;
-
+	// Reference to "this" FloatingTextController script
 	private FloatingTextController myScript;
 	
 	/************************************************************************************************/
@@ -25,58 +35,35 @@ public class AnimatorEditor : Editor
 
 		myScript = (FloatingTextController)target;
 
+		// <Update Animator> button will create a new AnimatorController using the
+		// given animations in FloatingTextController
+		if (GUILayout.Button("Update Animator Controller"))
+		{
+			// Generate the new AnimatorController & AnimatorOverrideController
+			AnimatorController updatedController = CreateAnimatorController();
+			AnimatorOverrideController updatedOverrideController = CreateAnimatorOverrideController(updatedController);
+
+			myScript.animatorOverrideController = updatedOverrideController;
+
+			// Some random things that ensures editor changes don't reset on Play
+			EditorUtility.SetDirty(myScript);
+			EditorSceneManager.MarkSceneDirty(myScript.gameObject.scene);
+			AssetDatabase.SaveAssets();
+		}
+
 		if (GUI.changed)
 		{
 			EditorUtility.SetDirty(myScript);
 			EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
 		}
-
-		// <Update Animator> button will create a new AnimatorController using the
-		// given animations in FloatingTextController
-		if (GUILayout.Button("Update Animator"))
-		{
-			// Generate the new AnimatorController
-			AnimatorController updatedController = CreateAnimatorController();
-
-			AnimatorOverrideController updatedOverrideController = CreateAnimatorOverrideController(updatedController);
-
-			myScript.animatorOverrideController = updatedOverrideController;
-
-			// Some random thing that ensures editor changes don't reset on Play
-			EditorUtility.SetDirty(myScript);
-			EditorSceneManager.MarkSceneDirty(myScript.gameObject.scene);
-			AssetDatabase.SaveAssets();
-
-		}
 	}
 
 	/************************************************************************************************/
-	public Object CreateOrReplaceAsset(Object asset, string path)
-	{
-		Object existingAsset = AssetDatabase.LoadAssetAtPath<Object>(path);
-	
-		if (existingAsset == null)
-		{
-			// Create a new object in the specified directory (default: Assets/)
-			AssetDatabase.CreateAsset(asset, defaultControllerPath + defaultControllerName + ".controller");
-			AssetDatabase.CreateAsset(asset, defaultControllerPath + defaultControllerName + ".overrideController");
-			existingAsset = asset;
-			Debug.LogError("Animator Override Controller not found. Creating new one in " + defaultControllerPath + " directory.");
-		}
-		else
-		{
-			// Replace the existing copy with <asset> data
-			EditorUtility.CopySerialized(asset, existingAsset);
-			Debug.Log("Overriding existing Animator Override Controller found at " + path + ".");
-		}
-		AssetDatabase.SaveAssets();
-		return existingAsset;
-	}
-
 	public AnimatorController CreateAnimatorController()
 	{
 		// The new controller that will be created based on Manager animations
 		AnimatorController newController = new AnimatorController();
+		newController.name = DEFAULT_CONTROLLER_NAME;
 		newController.AddLayer("DefaultLayer");
 
 		// Add a parameter that will determine the animation states
@@ -107,12 +94,9 @@ public class AnimatorEditor : Editor
 			transition.AddCondition(AnimatorConditionMode.Equals, i, "TextAnimation");
 		}
 		
-		newController.name = defaultControllerName;
+		//// Save OR update the new AnimatorController as an asset (.controller)
 
-
-		///// SAVE/UPDATE THE NEW ANIMATORCONTROLLER AS A '.controller' ASSET
-
-		// search if there is already an animator controller (and get its path if so)
+		// Search if there is already an AnimatorController (and get its path if so)
 		string assetPath = null;
 
 		if (myScript.animatorOverrideController != null)
@@ -120,40 +104,34 @@ public class AnimatorEditor : Editor
 
 		Object existingController = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
 
-
 		if (existingController == null)
 		{
-			// Create a new object in the specified directory (default: Assets/)
-			AssetDatabase.CreateAsset(newController, defaultControllerPath + defaultControllerName + ".controller");
+			// Create the new AnimatorController in the specified default directory
+			AssetDatabase.CreateAsset(newController, DEFAULT_CONTROLLER_PATH + DEFAULT_CONTROLLER_NAME + ".controller");
 			existingController = newController;
-			Debug.LogError("Animator Controller not found. Creating new one in " + defaultControllerPath + " directory.");
+			Debug.LogError("AnimatorController not found. Creating new one in " + DEFAULT_CONTROLLER_PATH + " directory.");
 		}
 		else
 		{
-			// Replace the existing copy with latest data
+			// Update the existing AnimatorController copy with latest data
 			EditorUtility.CopySerialized(newController, existingController);
-			Debug.Log("Overriding existing Animator Controller found at " + assetPath + ".");
+			Debug.Log("Updated existing AnimatorController found at " + assetPath + ".");
 		}
-		
 
+		// Make sure the returned controller refers to the generated 'asset', not the controller 'within this scope'
 		AnimatorController updatedController_asset = (AnimatorController)existingController;
-
-
+		
 		AssetDatabase.SaveAssets();
-
-		latestAnimatorController = updatedController_asset;
 
 		return updatedController_asset;
 	}
 
 
-	// smd
-
-	public AnimatorOverrideController CreateAnimatorOverrideController(AnimatorController n)
+	public AnimatorOverrideController CreateAnimatorOverrideController(AnimatorController ac)
 	{
 		AnimatorOverrideController newOverrideController = new AnimatorOverrideController();
-		newOverrideController.runtimeAnimatorController = n;
-		newOverrideController.name = "FloatingTextAnimatorController";
+		newOverrideController.runtimeAnimatorController = ac;
+		newOverrideController.name = DEFAULT_OVERRIDE_CONTROLLER_NAME;
 
 		// search if there is already an animator controller (and get its path if so)
 		string assetPath = AssetDatabase.GetAssetPath(myScript.animatorOverrideController);
@@ -162,18 +140,19 @@ public class AnimatorEditor : Editor
 		
 		if (existingOverrideController == null)
 		{
-			// Create a new object in the specified directory (default: Assets/)
-			AssetDatabase.CreateAsset(newOverrideController, defaultControllerPath + defaultOverrideControllerName + ".overrideController");
+			// Create a new AnimatorOverrideController in the specified default directory
+			AssetDatabase.CreateAsset(newOverrideController, DEFAULT_CONTROLLER_PATH + DEFAULT_OVERRIDE_CONTROLLER_NAME + ".overrideController");
 			existingOverrideController = newOverrideController;
-			Debug.LogError("Animator Override Controller not found. Creating new one in " + defaultControllerPath + " directory.");
+			Debug.LogError("AnimatorOverrideController not found. Creating new one in " + DEFAULT_CONTROLLER_PATH + " directory.");
 		}
 		else
 		{
-			// Replace the existing copy with latest data
+			// Update the existing AnimatorOverrideController copy with latest data
 			EditorUtility.CopySerialized(newOverrideController, existingOverrideController);
-			Debug.Log("Overriding existing Animator Override Controller found at " + assetPath + ".");
+			Debug.Log("Updated existing AnimatorOverrideController found at " + assetPath + ".");
 		}
 
+		// Make sure the returned controller refers to the generated 'asset', not the controller 'within this scope'
 		AnimatorOverrideController updatedController_asset = (AnimatorOverrideController)existingOverrideController;
 
 		AssetDatabase.SaveAssets();
